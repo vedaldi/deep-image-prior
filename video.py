@@ -76,6 +76,7 @@ LR = 0.001
 num_iter = 3100
 input_depth = 32
 net_input = get_noise(input_depth, INPUT, imsize_net).type(dtype).detach()
+
 # In[6]:
 net = skip(input_depth, 3, num_channels_down = [16, 32, 64, 128, 128, 128],
                            num_channels_up =   [16, 32, 64, 128, 128, 128],
@@ -103,7 +104,7 @@ def closure():
     print ('Iteration %05d    Loss %.3f' % (i, total_loss.item()), '\r', end='')
     if PLOT and i % 200 == 0:
         out_np = np.clip(torch_to_np(out), 0, 1)
-        plot_image_grid([out_np], 3, 3, num=1);
+        plot_image_grid([out_np], 3, 3, num=1)
         plt.pause(0.001)
 
     i += 1
