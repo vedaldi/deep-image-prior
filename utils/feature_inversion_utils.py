@@ -72,8 +72,6 @@ def vgg_preprocess_var(var):
 
 vgg_mean = torch.FloatTensor([103.939, 116.779, 123.680]).view(3, 1, 1)
 
-
-
 def get_preprocessor(imsize):
     def vgg_preprocess(tensor):
         (r, g, b) = torch.chunk(tensor, 3, dim=0)
@@ -85,9 +83,7 @@ def get_preprocessor(imsize):
         transforms.ToTensor(),
         transforms.Lambda(vgg_preprocess)
     ])
-
     return preprocess
-
 
 def get_deprocessor():
     def vgg_deprocess(tensor):

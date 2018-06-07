@@ -1,9 +1,11 @@
 from __future__ import print_function
 import argparse
 import os
+import glob
 import torch
 import torch.optim
 import numpy as np
+import PIL
 import matplotlib.pyplot as plt
 from munch import Munch
 from models import *
@@ -23,6 +25,7 @@ conf = Munch()
 conf.pretrained_net = 'alexnet_caffe'
 conf.layer_to_invert = 'fc6'
 conf.data_type = torch.cuda.FloatTensor
+conf.data_type = torch.FloatTensor
 conf.pad = 'zero'
 conf.optimizer = 'adam'
 conf.lr = 0.001
@@ -33,57 +36,95 @@ conf.plot = True
 
 prefix = 'data/blue'
 
+def get_image(path, imsize=-1):
+    """Load an image and resize to a cpecific size. 
 
-# Get the pre-trained model
-cnn = get_pretrained_net(conf.pretrained_net)
-cnn = cnn.type(conf.data_type)
+    Args: 
+        path: path to image
+        imsize: tuple or scalar with dimensions; -1 for `no resize`
+    """
+    img = load(path)
 
-# Remove the layers we don't need
+    if isinstance(imsize, int):
+        imsize = (imsize, imsize)
+
+    if imsize[0]!= -1 and img.size != imsize:
+        if imsize[0] > img.size[0]:
+            img = img.resize(imsize, Image.BICUBIC)
+        else:
+            img = img.resize(imsize, Image.ANTIALIAS)
+
+    img_np = pil_to_np(img)
+
+    return img, img_np
+
+
+# Load image preprocessor
+imsize = 227 if conf.pretrained_net == 'alexnet' else 224
+imsize_net = 256
+preprocess, deprocess = get_preprocessor(imsize), get_deprocessor()
+def get_normalized_image(path):
+    im = load(path)
+    w, h = im.size
+    dx, dy = (w - imsize)/2, (h - imsize)/2
+    im = im.crop(box=(dx, dy, w - dx, h - dy))
+    im = deprocess(preprocess(im))
+    return im
+
+# Create destination folder
+output_folder = os.path.join(prefix, conf.layer_to_invert)
+if not os.path.exists(output_folder):
+    os.mkdir(output_folder)
+
+# Load and normalise image
+for file in glob.glob(os.path.join(prefix, "*.jpg")):
+    output_file = os.path.join(output_folder, os.path.basename(file))
+    print(file, output_file)
+    if os.path.exists(output_file):
+        print("Skipping because it already exists.")        
+    im_reference = get_normalized_image(file)
+    #plt.imshow(im_reference)
+    #plt.show()
+    im_reference.save(output_file)
+
+# Get the pre-trained model, removing layers we do not need
+cnn = get_pretrained_net(conf.pretrained_net).type(conf.data_type)
 layers = list(cnn._modules.keys())
 last = layers.index('fc6')
 for k in layers[last+1:]:
     cnn._modules.pop(k)
 print(cnn)
 
-# Load image preprocessor
-imsize = 227 if conf.pretrained_net == 'alexnet' else 224
-imsize_net = 256
-preprocess, deprocess = get_preprocessor(imsize), get_deprocessor()
-
-# Load and normalise image
-img_content_pil, img_content_np  = get_image(fname, imsize)
-img_content_preprocessed = preprocess(img_content_pil)[None,:]
-img_content_preprocessed = img_content_preprocessed.type(conf.data_type)
-img_content_pil
-
 # Matcher: store target feature values for inversions
 opt_content = {'layers': conf.layer_to_invert, 'what': 'features'}
 matcher_content = get_matcher(cnn, opt_content)
 matcher_content.mode = 'store'
-cnn(img_content_preprocessed)
+cnn(preprocess(im))
 
 # Generator network (prior)
 net_input = get_noise(conf.input_depth, conf.input_type, imsize_net)
 net_input = net_input.type(conf.data_type).detach()
-net = skip(conf.input_depth, 3, num_channels_down = [16, 32, 64, 128, 128, 128],
-                           num_channels_up =   [16, 32, 64, 128, 128, 128],
-                           num_channels_skip = [4, 4, 4, 4, 4, 4],
-                           filter_size_down = [7, 7, 5, 5, 3, 3],
-                           filter_size_up = [7, 7, 5, 5, 3, 3],
-                           upsample_mode = 'nearest',
-                           downsample_mode = 'avg',
-                           need_sigmoid = True,
-                           pad = conf.pad,
-                           act_fun = 'LeakyReLU')
+net = skip(conf.input_depth, 3,
+    num_channels_down = [16, 32, 64, 128, 128, 128],
+    num_channels_up   = [16, 32, 64, 128, 128, 128],
+    num_channels_skip = [ 4,  4,  4,   4,   4,   4],
+    filter_size_down  = [ 7,  7,  5,   5,   3,   3],
+    filter_size_up    = [ 7,  7,  5,   5,   3,   3],
+    upsample_mode = 'nearest',
+    downsample_mode = 'avg',
+    need_sigmoid = True,
+    pad = conf.pad,
+    act_fun = 'LeakyReLU')
 net = net.type(conf.data_type)
 
 # Optimisation
 iteration = 0
 def train_callback():
     global iteration
-    out = net(net_input)[:, :, :imsize, :imsize]
-    cnn(vgg_preprocess_var(out))
-    total_loss =  sum(matcher_content.losses.values())
+    generated = net(net_input)[:, :, :imsize, :imsize]
+    generated_preprocessed = vgg_preprocess_var(generated)
+    cnn(generated_preprocessed)
+    total_loss = sum(matcher_content.losses.values())
     total_loss.backward()
     print ('Iteration %05d    Loss %.3f' %
         (iteration, total_loss.item()), '\r', end='')
