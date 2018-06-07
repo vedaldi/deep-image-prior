@@ -15,11 +15,6 @@ from utils.common_utils import *
 
 fname = './data/feature_inversion/building.jpg'
 
-# Setup Cuda
-torch.backends.cudnn.enabled = True
-torch.backends.cudnn.benchmark = False
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-
 # Configuration
 conf = Munch()
 conf.pretrained_net = 'alexnet_caffe'
@@ -32,7 +27,26 @@ conf.lr = 0.001
 conf.num_iter = 3100
 conf.input_type = 'noise'
 conf.input_depth = 32
-conf.plot = True
+conf.plot = False
+conf.cuda = '0'
+
+# What to do based on sysarg
+if len(sys.argv) > 1:
+    case = int(sys.argv[1])
+    if case == 1:
+        conf.layer_to_invert = 'fc6'
+        conf.cuda = '0'
+    elif case == 2:
+        conf.layer_to_invert = 'conv5'
+        conf.cuda = '2'
+    elif case == 3:
+        conf.layer_to_invert = 'fc8'
+        conf.cuda = '3'
+
+# Setup Cuda
+torch.backends.cudnn.enabled = True
+torch.backends.cudnn.benchmark = False
+os.environ['CUDA_VISIBLE_DEVICES'] = conf.cuda
 
 prefix = 'data/blue'
 
@@ -50,25 +64,31 @@ def get_normalized_image(path):
 
 # Create destination folder
 output_folder = os.path.join(prefix, conf.layer_to_invert)
+input_folder = os.path.join(prefix, 'x0')
 if not os.path.exists(output_folder):
     os.mkdir(output_folder)
+if not os.path.exists(input_folder):
+    os.mkdir(input_folder)
 
 # Get the pre-trained model, removing layers we do not need
 cnn = get_pretrained_net(conf.pretrained_net).type(conf.data_type)
 layers = list(cnn._modules.keys())
-last = layers.index('fc6')
+last = layers.index(conf.layer_to_invert)
 for k in layers[last+1:]:
     cnn._modules.pop(k)
 print(cnn)
 
 # Load and normalise image
 for file in glob.glob(os.path.join(prefix, "*.jpg")):
+    input_file = os.path.join(input_folder, os.path.basename(file))
     output_file = os.path.join(output_folder, os.path.basename(file))
-    print(file, output_file)
-    if os.path.exists(output_file):
-        print("Skipping because it already exists.")        
+    print(file, output_file)        
     im_reference = get_normalized_image(file)
-
+    im_reference.save(input_file)
+    if os.path.exists(output_file):
+        print("Skipping because it already exists.")
+        continue
+    
     # Matcher: store target feature values for inversions
     opt_content = {'layers': conf.layer_to_invert, 'what': 'features'}
     matcher_content = get_matcher(cnn, opt_content)
@@ -116,5 +136,5 @@ for file in glob.glob(os.path.join(prefix, "*.jpg")):
     # Final result
     out = net(net_input)[:, :, :imsize, :imsize]
     out_image = torch_to_np(out)
-    plot_image_grid([out_image], 3, 3)
+    plot_image_grid([out_image], 3, 3, num=1)    
     Image.fromarray((255 * out_image).astype(np.uint8).transpose(1, 2, 0)).save(output_file)
