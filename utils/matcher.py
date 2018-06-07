@@ -37,10 +37,8 @@ def gram_matrix(x):
     gram = features.bmm(features_t) / (ch * h * w)
     return gram
 
-
 def features(x):
     return x
-
 
 all_features = {
     'gram_matrix': gram_matrix,

@@ -44,18 +44,14 @@ def get_vanilla_vgg_features(cut_idx=-1):
 
 
 def get_matcher(net, opt):
-    idxs = [x for x in opt['layers'].split(',')]
-    matcher = Matcher(opt['what'])
-
+    """Attach a matcher object for storing/comparing the targer features."""
     def hook(module, input, output):
         matcher(module, output)
-
+    idxs = [x for x in opt['layers'].split(',')]
+    matcher = Matcher(opt['what'])
     for i in idxs:
         net._modules[i].register_forward_hook(hook)
-
     return matcher
-
-
 
 def get_vgg(cut_idx=-1):
     f = get_vanilla_vgg_features(cut_idx)
