@@ -81,9 +81,12 @@ net_input = get_noise(input_depth, INPUT, imsize_net).type(dtype).detach()
 net = skip(input_depth, 3, num_channels_down = [16, 32, 64, 128, 128, 128],
                            num_channels_up =   [16, 32, 64, 128, 128, 128],
                            num_channels_skip = [4, 4, 4, 4, 4, 4],   
-                           filter_size_down = [7, 7, 5, 5, 3, 3], filter_size_up = [7, 7, 5, 5, 3, 3], 
-                           upsample_mode='nearest', downsample_mode='avg',
-                           need_sigmoid=True, pad=pad, act_fun='LeakyReLU').type(dtype)
+                           filter_size_down = [7, 7, 5, 5, 3, 3],
+                           filter_size_up = [7, 7, 5, 5, 3, 3], 
+                           upsample_mode='nearest',
+                           downsample_mode='avg',
+                           need_sigmoid=True, pad=pad, act_fun='LeakyReLU')
+net = net.type(dtype)
 
 # Compute number of parameters
 s  = sum(np.prod(list(p.size())) for p in net.parameters())
