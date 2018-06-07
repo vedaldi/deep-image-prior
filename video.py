@@ -4,7 +4,7 @@
 
 from __future__ import print_function
 import matplotlib.pyplot as plt
-get_ipython().run_line_magic('matplotlib', 'inline')
+#get_ipython().run_line_magic('matplotlib', 'inline')
 
 import argparse
 import os
@@ -65,7 +65,7 @@ img_content_pil
 # In[4]:
 matcher_content = get_matcher(cnn, opt_content)
 matcher_content.mode = 'store'
-cnn(img_content_prerocessed);
+cnn(img_content_prerocessed)
 
 # In[5]:
 INPUT = 'noise'
@@ -103,7 +103,8 @@ def closure():
     print ('Iteration %05d    Loss %.3f' % (i, total_loss.item()), '\r', end='')
     if PLOT and i % 200 == 0:
         out_np = np.clip(torch_to_np(out), 0, 1)
-        plot_image_grid([out_np], 3, 3);
+        plot_image_grid([out_np], 3, 3, num=1);
+        plt.pause(0.001)
 
     i += 1
     
@@ -168,8 +169,9 @@ def closure():
     print ('Iteration %05d    Loss %.3f' % (i, total_loss.item()), '\r', end='')
     if PLOT and i % 1000 == 0:
         out_np = np.clip(torch_to_np(out), 0, 1)
-        plot_image_grid([out_np], 3, 3);
-
+        plot_image_grid([out_np], 3, 3, num=1);
+        np.pause(0.001)
+    
     i += 1
     
     return total_loss
