@@ -7,6 +7,7 @@ from utils.feature_inversion_utils import View # For Pickle
 
 prefix = 'data/sequence'
 inverter.xmkdir(prefix)
+inverter.conf.cuda = '1'
 
 # Load demo image
 url = 'https://upload.wikimedia.org/wikipedia/commons/2/27/Baby_ginger_monkey.jpg'
@@ -20,8 +21,7 @@ cnn = inverter.load_net(inverter.conf)
 # Go
 for k in reversed(list(cnn._modules.keys())):
     print("Slice", k)
-    inverter.conf.layer_to_invert = k
-    inverter.conf.cuda = '1'
+    inverter.conf.layer_to_invert = k    
     #inverter.conf.num_iter = 32  
     inverter.slice_net(inverter.conf, cnn)
     x1, x0 = inverter.invert(inverter.conf, cnn, im)
