@@ -1,0 +1,13 @@
+name: deep
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - pytorch
+  - numpy
+  - cv2
+  - ffmpeg
+  - matplotlib
+  - munch
+  - jupyter
