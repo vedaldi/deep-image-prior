@@ -1,5 +1,7 @@
 __pycache__
 .ipynb_checkpoints
-data/
+.vscode/.ropeproject
 .vscode/tags
 alexnet-torch_py3.pth
+data/
+
