@@ -41,12 +41,16 @@ def load_net(conf):
 
     # Get the pre-trained model, removing layers we do not need
     cnn = get_pretrained_net(conf.pretrained_net).type(conf.data_type)
+    return cnn
+
+def slice_net(conf, cnn):
+    # Get the pre-trained model, removing layers we do not need
+    cnn = get_pretrained_net(conf.pretrained_net).type(conf.data_type)
     layers = list(cnn._modules.keys())
     last = layers.index(conf.layer_to_invert)
     for k in layers[last+1:]:
         cnn._modules.pop(k)
     print(cnn)
-    return cnn
 
 def invert(conf, cnn, im): 
 
