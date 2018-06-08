@@ -7,6 +7,7 @@ import numpy as np
 
 prefix = 'data/blue'
 output = 'data/blue.mp4'
+fourcc = cv2.VideoWriter_fourcc(*'x264') #(*'mp4v')
 
 def read_frame(file):
     base = os.path.basename(file)
@@ -24,12 +25,13 @@ def read_frame(file):
              np.concatenate(ims[2:4], axis=1)), axis=0)
 
 files = sorted(glob.glob(os.path.join(prefix, "x0", "*.jpg")))
-frame = read_frame(files[0])
 
-fourcc = cv2.VideoWriter_fourcc(*'x264')#(*'x264') #(*'mp4v')
+frame = read_frame(files[0])
 video = cv2.VideoWriter(output, fourcc, 20.0, frame.shape[:2])
+
 for file in files:
     frame = read_frame(file)
     video.write(frame)
     print('.', end='')
+
 video.release()
