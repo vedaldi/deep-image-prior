@@ -7,9 +7,9 @@ import os
 from collections import OrderedDict
 
 class View(nn.Module):
+    """A shape adaptatino layer to patch certain networks."""
     def __init__(self):
         super(View, self).__init__()
-
     def forward(self, x):
         return x.view(x.shape[0],-1) 
 
@@ -22,12 +22,9 @@ def get_vanilla_vgg_features(cut_idx=-1):
         map = {'classifier.6.weight':u'classifier.7.weight', 'classifier.6.bias':u'classifier.7.bias'}
         vgg_weights = OrderedDict([(map[k] if k in map else k,v) for k,v in vgg_weights.iteritems()])
 
-        
-
         model = models.vgg19()
         model.classifier = nn.Sequential(View(), *model.classifier._modules.values())
-        
-
+    
         model.load_state_dict(vgg_weights)
         
         torch.save(model.features, 'vgg_features.pth')
@@ -39,9 +36,7 @@ def get_vanilla_vgg_features(cut_idx=-1):
         vgg = nn.Sequential(*(vgg._modules.values() + vgg_classifier._modules.values()))
 
     vgg.eval()
-
     return vgg
-
 
 def get_matcher(net, opt):
     """Attach a matcher object for storing/comparing the targer features."""

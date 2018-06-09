@@ -15,6 +15,12 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/video.py"
-        },       
+        },      
+        {
+            "name": "Python: Classes",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/classes.py"
+        },  
     ]
 }
