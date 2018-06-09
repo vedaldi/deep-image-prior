@@ -22,9 +22,9 @@ conf.layer_to_maximize = 'fc8'
 conf.data_type = torch.FloatTensor
 conf.pad = 'zero'
 conf.optimizer = 'adam'
-conf.lr = 0.001
-conf.weight_decay = 10
-conf.num_iter = 2000
+conf.lr = 0.01
+conf.weight_decay = 1
+conf.num_iter = 2500
 conf.input_type = 'noise'
 conf.input_depth = 32
 conf.plot = True
@@ -97,8 +97,8 @@ def maximize(conf, cnn, neuron):
 
     # Optimisation
     maximize.iteration = 0
-    def train_callback():        
-        generated = net(net_input)[:, :, :imsize, :imsize]
+    def train_callback():       
+        generated = net(net_input)[:, :, :imsize, :imsize] 
         generated_preprocessed = vgg_preprocess_caffe(generated)
         cnn(generated_preprocessed)
         total_loss = sum(matcher.losses.values())
@@ -113,6 +113,7 @@ def maximize(conf, cnn, neuron):
         return total_loss
 
     matcher.method = 'maximize'
+    matcher.method = 'match'
     p = get_params('net', net, net_input)
     optimize(conf.optimizer, p, train_callback, LR=conf.lr, num_iter=conf.num_iter, weight_decay=conf.weight_decay)
     
