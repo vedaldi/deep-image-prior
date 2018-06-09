@@ -29,6 +29,8 @@ conf.input_type = 'noise'
 conf.input_depth = 32
 conf.plot = True
 conf.cuda = '1'
+conf.input_noise_std = 0.03
+conf.param_noise = True
 
 def xmkdir(path):
     if not os.path.exists(path):
@@ -97,8 +99,17 @@ def maximize(conf, cnn, neuron):
 
     # Optimisation
     maximize.iteration = 0
-    def train_callback():       
-        generated = net(net_input)[:, :, :imsize, :imsize] 
+    def train_callback():
+        # Regularisation: add noise to the generator input
+        if conf.input_noise_std > 0:
+            n = torch.randn_like(net_input) * conf.input_noise_std
+        else:
+            n = torch.zeros_like(net_input)
+        # Regularisation: add noise to the network parameters
+        if conf.param_noise:
+            for par in [x for x in net.parameters() if len(x.size()) == 4]:
+                par = par + torch.randn_like(par) * (par.std().detach()/50)
+        generated = net(net_input + n)[:, :, :imsize, :imsize] 
         generated_preprocessed = vgg_preprocess_caffe(generated)
         cnn(generated_preprocessed)
         total_loss = sum(matcher.losses.values())
