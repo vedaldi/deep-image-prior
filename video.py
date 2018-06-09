@@ -6,10 +6,11 @@ import inverter
 from utils.feature_inversion_utils import View # For Pickle
 
 prefix = 'data/blue'
+group_size = 1
 
 inverter.conf.plot = True
 inverter.conf.cuda = '1'
-inverter.conf.num_iter = 3
+#inverter.conf.num_iter = 3
 
 # What to do based on sysarg
 if len(sys.argv) > 1:
@@ -25,8 +26,8 @@ if len(sys.argv) > 1:
         inverter.conf.cuda = '3'
 
 # Create destination folder
-x1_folder = os.path.join(prefix + '_test', inverter.conf.layer_to_invert)
-x0_folder = os.path.join(prefix + '_test', 'x0')
+x1_folder = os.path.join(prefix + '_test2', inverter.conf.layer_to_invert)
+x0_folder = os.path.join(prefix + '_test2', 'x0')
 inverter.xmkdir(x1_folder)
 inverter.xmkdir(x0_folder)
 
@@ -55,7 +56,7 @@ for path in glob.glob(os.path.join(prefix, "*.jpg")):
         print("Skipping because it already exists.")
         continue
     jobs.append((path, x0_path, x1_path))
-    if len(jobs) == 64:
+    if len(jobs) == group_size:
         run(jobs)
         jobs = []
 run(jobs)
