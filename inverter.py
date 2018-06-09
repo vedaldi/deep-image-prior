@@ -16,10 +16,10 @@ from utils.feature_inversion_utils import View
 
 # Configuration
 conf = Munch()
-conf.pretrained_net = 'alexnet_caffe'
+#conf.pretrained_net = 'alexnet_caffe'
+conf.pretrained_net = 'alexnet_torch'
 conf.layer_to_invert = 'fc6'
-conf.data_type = torch.cuda.FloatTensor
-#conf.data_type = torch.FloatTensor
+conf.data_type = torch.FloatTensor
 conf.pad = 'zero'
 conf.optimizer = 'adam'
 conf.lr = 0.001
@@ -35,9 +35,11 @@ def xmkdir(path):
 
 def load_net(conf):
     # Setup Cuda
-    torch.backends.cudnn.enabled = True
-    torch.backends.cudnn.benchmark = False
-    os.environ['CUDA_VISIBLE_DEVICES'] = conf.cuda
+    if conf.cuda is not None:
+        torch.backends.cudnn.enabled = True
+        torch.backends.cudnn.benchmark = False
+        os.environ['CUDA_VISIBLE_DEVICES'] = conf.cuda
+        conf.data_type = torch.cuda.FloatTensor
 
     # Get the pre-trained model, removing layers we do not need
     cnn = get_pretrained_net(conf.pretrained_net).type(conf.data_type)

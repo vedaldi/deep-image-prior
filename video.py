@@ -9,7 +9,7 @@ prefix = 'data/blue'
 group_size = 1
 
 inverter.conf.plot = True
-inverter.conf.cuda = '1'
+inverter.conf.cuda = None
 #inverter.conf.num_iter = 3
 
 # What to do based on sysarg

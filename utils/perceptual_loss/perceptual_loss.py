@@ -10,6 +10,7 @@ from torchvision.models.vgg import model_urls
 from torchvision.models import vgg19
 from torch.autograd import Variable
 
+from utils.feature_inversion_utils import View
 from .vgg_modified import VGGModified
 
 def get_pretrained_net(name):
@@ -42,9 +43,32 @@ def get_pretrained_net(name):
         model.load_state_dict(torch.load('vgg_pytorch_modified.pkl')['state_dict'])
 
         return model
+    elif name == 'alexnet_torch':
+        path = 'models/alexnet-pytorch-state.pth'
+        if not os.path.exists(path):
+            model = models.alexnet(pretrained=True)
+            torch.save(model.state_dict(), path)
+        model = models.alexnet()
+        model.load_state_dict(torch.load(path))
+        a=[x for _, x in model._modules['features']._modules.items()]
+        b=[View()]
+        c=[x for _, x in model._modules['classifier']._modules.items()]
+        names = ["conv1", "relu1", "pool1",
+                 "conv2", "relu2", "pool2",
+                 "conv3", "reul3",
+                 "conv4", "relu4",
+                 "conv5", "relu5", "pool5",
+                 "view5",
+                 "drop6", "fc6", "relu6",
+                 "drop7", "fc7", "relu7",
+                 "fc8"]
+        net = nn.Sequential(OrderedDict(zip(names, a+b+c)))
+        for _, x in net._modules.items():
+            if type(x) != torch.nn.ReLU: continue
+            x.inplace = False
+        return net
     else:
         assert False
-
 
 class PerceputalLoss(nn.modules.loss._Loss):
     """ 
