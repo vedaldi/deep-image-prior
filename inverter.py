@@ -16,8 +16,8 @@ from utils.feature_inversion_utils import View
 
 # Configuration
 conf = Munch()
-#conf.pretrained_net = 'alexnet_caffe'
-conf.pretrained_net = 'alexnet_torch'
+conf.pretrained_net = 'alexnet_caffe'
+#conf.pretrained_net = 'alexnet_torch'
 conf.layer_to_invert = 'fc6'
 conf.data_type = torch.FloatTensor
 conf.pad = 'zero'

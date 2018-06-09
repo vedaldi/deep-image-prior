@@ -16,9 +16,9 @@ from utils.feature_inversion_utils import View
 
 # Configuration
 conf = Munch()
-#conf.pretrained_net = 'alexnet_caffe'
-conf.pretrained_net = 'alexnet_torch'
-conf.layer_to_maximize = 'fc6'
+conf.pretrained_net = 'alexnet_caffe'
+#conf.pretrained_net = 'alexnet_torch'
+conf.layer_to_maximize = 'fc8'
 conf.data_type = torch.FloatTensor
 conf.pad = 'zero'
 conf.optimizer = 'adam'
@@ -27,7 +27,7 @@ conf.num_iter = 3100
 conf.input_type = 'noise'
 conf.input_depth = 32
 conf.plot = True
-conf.cuda = None
+conf.cuda = '1'
 
 def xmkdir(path):
     if not os.path.exists(path):
@@ -104,7 +104,7 @@ def maximize(conf, cnn, neuron):
         total_loss.backward()
         print ('Iteration %05d    Loss %.3f' %
             (maximize.iteration, total_loss.item()), '\r', end='')
-        if conf.plot and maximize.iteration % 1 == 0:
+        if conf.plot and maximize.iteration % 200 == 0:
             generated_np = [np.clip(torch_to_np(x), 0, 1) for x in torch.chunk(generated, 1)]
             plot_image_grid(generated_np, 8, 1, num=1)
             plt.pause(0.001)
@@ -113,9 +113,10 @@ def maximize(conf, cnn, neuron):
 
     matcher.method = 'maximize'
     p = get_params('net', net, net_input)
-    optimize(conf.optimizer, p, train_callback, conf.lr, conf.num_iter)
-
+    optimize(conf.optimizer, p, train_callback, LR=conf.lr, num_iter=conf.num_iter, weight_decay=10)
+    
     generated = net(net_input)[:, :, :imsize, :imsize]
-    im = Image.fromarray((255 * generated).astype(np.uint8).transpose(1, 2, 0))
+    generated_np = np.clip(torch_to_np(generated), 0, 1)
+    im = Image.fromarray((255 * generated_np).astype(np.uint8).transpose(1, 2, 0))
     return im
    

@@ -4,12 +4,18 @@ import PIL
 import maximizer 
 from utils.feature_inversion_utils import View # For Pickle
 
-maximizer.conf.layer_to_maximize = "fc8"
-neuron = maximizer.get_neuron_for_class('black swan')
+class_names = ["black swan", "cheesburger", "goose", "coffee mug", "tree frog", "vending machine"]
 
-# Load network
-cnn = maximizer.load_net(maximizer.conf)
-maximizer.slice_net(maximizer.conf, cnn)
+maximizer.xmkdir('data/maxim')
 
-# Maximize
-x0 = maximizer.maximize(maximizer.conf, cnn, neuron)
+for class_name in class_names:
+    maximizer.conf.layer_to_maximize = "fc8"
+    neuron = maximizer.get_neuron_for_class(class_name)
+
+    # Load network
+    cnn = maximizer.load_net(maximizer.conf)
+    maximizer.slice_net(maximizer.conf, cnn)
+
+    # Maximize
+    x0 = maximizer.maximize(maximizer.conf, cnn, neuron)
+    x0.save(os.path.join('data/maxim', class_name + ".png"))
