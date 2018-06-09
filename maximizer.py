@@ -23,7 +23,8 @@ conf.data_type = torch.FloatTensor
 conf.pad = 'zero'
 conf.optimizer = 'adam'
 conf.lr = 0.001
-conf.num_iter = 3100
+conf.weight_decay = 10
+conf.num_iter = 2000
 conf.input_type = 'noise'
 conf.input_depth = 32
 conf.plot = True
@@ -113,7 +114,7 @@ def maximize(conf, cnn, neuron):
 
     matcher.method = 'maximize'
     p = get_params('net', net, net_input)
-    optimize(conf.optimizer, p, train_callback, LR=conf.lr, num_iter=conf.num_iter, weight_decay=10)
+    optimize(conf.optimizer, p, train_callback, LR=conf.lr, num_iter=conf.num_iter, weight_decay=conf.weight_decay)
     
     generated = net(net_input)[:, :, :imsize, :imsize]
     generated_np = np.clip(torch_to_np(generated), 0, 1)

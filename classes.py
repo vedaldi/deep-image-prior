@@ -8,7 +8,7 @@ class_names = ["black swan", "cheesburger", "goose", "coffee mug", "tree frog", 
 
 maximizer.xmkdir('data/maxim')
 
-for class_name in class_names:
+for class_name in reversed(class_names):
     maximizer.conf.layer_to_maximize = "fc8"
     neuron = maximizer.get_neuron_for_class(class_name)
 
