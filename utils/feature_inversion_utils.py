@@ -11,7 +11,7 @@ class View(nn.Module):
         super(View, self).__init__()
 
     def forward(self, x):
-        return x.view(-1) 
+        return x.view(x.shape[0],-1) 
 
 def get_vanilla_vgg_features(cut_idx=-1):
     if not os.path.exists('vgg_features.pth'):

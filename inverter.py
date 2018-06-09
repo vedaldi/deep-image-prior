@@ -31,7 +31,7 @@ conf.cuda = '0'
 
 def xmkdir(path):
     if not os.path.exists(path):
-        os.mkdir(path)
+        os.makedirs(path)
 
 def load_net(conf):
     # Setup Cuda
@@ -52,25 +52,35 @@ def slice_net(conf, cnn):
         cnn._modules.pop(k)
     print(cnn)
 
-def invert(conf, cnn, im): 
+def invert(conf, cnn, ims): 
+
+    # Make sure it is alist
+    singleton = type(ims) != list
+    if singleton:
+        ims = [ims]
 
     # Load image to process
     imsize = 227 if conf.pretrained_net == 'alexnet' else 224
     imsize_net = 256
-    preprocess, deprocess = get_preprocessor(imsize), get_deprocessor()    
-    w, h = im.size
-    dx, dy = (w - imsize)/2, (h - imsize)/2
-    im = im.crop(box=(dx, dy, w - dx, h - dy))
-    im_reference = deprocess(preprocess(im))
+    preprocess, deprocess = get_preprocessor(imsize), get_deprocessor()
+    ims0 = []
+    ims0_preprocessed = []
+    for im in ims:
+        w, h = im.size
+        dx, dy = (w - imsize)/2, (h - imsize)/2
+        im = im.crop(box=(dx, dy, w - dx, h - dy))
+        im_preprocessed = preprocess(im)
+        ims0_preprocessed.append(im_preprocessed[None,:]) # 3 x H x W -> 1 x 3 x H x W
+        ims0.append(deprocess(im_preprocessed))
 
     # Matcher: store target feature values for inversions
     opt_content = {'layers': conf.layer_to_invert, 'what': 'features'}
     matcher_content = get_matcher(cnn, opt_content)
     matcher_content.mode = 'store'
-    cnn(preprocess(im_reference)[None,:].type(conf.data_type))
+    cnn(torch.cat(ims0_preprocessed, 0).type(conf.data_type))
 
     # Generator network (prior)
-    net_input = get_noise(conf.input_depth, conf.input_type, imsize_net)
+    net_input = get_noise(conf.input_depth, conf.input_type, imsize_net, card = len(ims))
     net_input = net_input.type(conf.data_type).detach()
     net = skip(conf.input_depth, 3,
         num_channels_down = [16, 32, 64, 128, 128, 128],
@@ -95,9 +105,9 @@ def invert(conf, cnn, im):
         total_loss.backward()
         print ('Iteration %05d    Loss %.3f' %
             (invert.iteration, total_loss.item()), '\r', end='')
-        if conf.plot and iteration % 200 == 0:
-            generated_np = np.clip(torch_to_np(generated), 0, 1)
-            plot_image_grid([generated_np], 3, 3, num=1)
+        if conf.plot and invert.iteration % 200 == 0:
+            generated_np = [np.clip(torch_to_np(x), 0, 1) for x in torch.chunk(generated, len(ims))]
+            plot_image_grid(generated_np, 8, 1, num=1)
             plt.pause(0.001)
         invert.iteration += 1
         return total_loss
@@ -106,7 +116,9 @@ def invert(conf, cnn, im):
     p = get_params('net', net, net_input)
     optimize(conf.optimizer, p, train_callback, conf.lr, conf.num_iter)
 
-    out = net(net_input)[:, :, :imsize, :imsize]
-    out_image = torch_to_np(out)        
-    im_out = Image.fromarray((255 * out_image).astype(np.uint8).transpose(1, 2, 0))
-    return im_out, im_reference
+    generated = net(net_input)[:, :, :imsize, :imsize]
+    generated_np = [np.clip(torch_to_np(x), 0, 1) for x in torch.chunk(generated, len(ims))]
+    ims1 = [Image.fromarray((255 * x).astype(np.uint8).transpose(1, 2, 0)) for x in generated_np]
+    if singleton:
+        ims0, ims1 = ims0[0], ims1[0]
+    return ims1, ims0

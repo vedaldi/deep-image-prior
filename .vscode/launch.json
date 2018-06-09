@@ -14,7 +14,7 @@
             "name": "Python: Video",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/video2.py"
+            "program": "${workspaceFolder}/video.py"
         },       
     ]
 }
