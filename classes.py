@@ -3,8 +3,11 @@ from PIL import Image
 import PIL
 import maximizer 
 from utils.feature_inversion_utils import View # For Pickle
+from imnet_list import imnet_classes
 
-class_names = ["black swan", "cheeseburger", "goose", "coffee mug", "vending machine", "tree frog"]
+class_names = ["black swan", "cheeseburger", "goose", "coffee mug", 
+    "vending machine", "tree frog", "volcano"]
+class_names = [x for _, x in imnet_classes.items()]
 
 maximizer.xmkdir('data/maxim2')
 
