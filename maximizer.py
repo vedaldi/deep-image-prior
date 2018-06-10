@@ -24,14 +24,14 @@ conf.data_type = torch.FloatTensor
 conf.pad = 'zero'
 conf.optimizer = 'adam'
 conf.lr = 0.01
-conf.weight_decay = 1
+conf.weight_decay = 0
 conf.num_iter = 2500
 conf.input_type = 'noise'
 conf.input_depth = 32
 conf.plot = True
 conf.cuda = '1'
-conf.input_noise_std = 0#0.03
-conf.param_noise = False#True
+conf.input_noise_std = 0.03
+conf.param_noise = True
 
 def xmkdir(path):
     if not os.path.exists(path):
@@ -42,7 +42,7 @@ def load_net(conf):
     if conf.cuda is not None:
         torch.backends.cudnn.enabled = True
         torch.backends.cudnn.benchmark = False
-        torch.backends.cudnn.deterministic=True
+        torch.backends.cudnn.deterministic = True
         os.environ['CUDA_VISIBLE_DEVICES'] = conf.cuda
         conf.data_type = torch.cuda.FloatTensor
 
@@ -116,10 +116,10 @@ def maximize(conf, cnn, neuron):
         # Regularisation: add noise to the generator input
         if conf.input_noise_std > 0:
             n = torch.randn_like(net_input) * conf.input_noise_std
-            generated = net(net_input)[:, :, :imsize, :imsize]
+            generated = net(net_input + n)[:, :, :imsize, :imsize]
         else:
             n = torch.zeros_like(net_input)
-            generated = net(net_input + n)[:, :, :imsize, :imsize]
+            generated = net(net_input)[:, :, :imsize, :imsize]
         generated_preprocessed = vgg_preprocess_caffe(generated)
         cnn(generated_preprocessed)
         total_loss = sum(matcher.losses.values())
