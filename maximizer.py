@@ -2,6 +2,7 @@ from __future__ import print_function
 import argparse
 import os
 import glob
+import random
 import torch
 import torch.optim
 import numpy as np
@@ -29,8 +30,8 @@ conf.input_type = 'noise'
 conf.input_depth = 32
 conf.plot = True
 conf.cuda = '1'
-conf.input_noise_std = 0.03
-conf.param_noise = True
+conf.input_noise_std = 0#0.03
+conf.param_noise = False#True
 
 def xmkdir(path):
     if not os.path.exists(path):
@@ -41,6 +42,7 @@ def load_net(conf):
     if conf.cuda is not None:
         torch.backends.cudnn.enabled = True
         torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic=True
         os.environ['CUDA_VISIBLE_DEVICES'] = conf.cuda
         conf.data_type = torch.cuda.FloatTensor
 
@@ -67,7 +69,14 @@ def get_neuron_for_class(class_name):
             return int(index)
     return None
 
-def maximize(conf, cnn, neuron): 
+def maximize(conf, cnn, neuron):
+    # Random seed
+    seed = 2
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if conf.cuda is not None:
+        torch.cuda.manual_seed(seed)
 
     # Get image size
     imsize = 227 if conf.pretrained_net == 'alexnet' else 224
@@ -76,7 +85,7 @@ def maximize(conf, cnn, neuron):
     # Matcher: store target feature values for inversions
     matcher_opts = {
         'layers': [conf.layer_to_maximize],
-        'what': 'features', 
+        'what': 'features',
         'map_idx': neuron}
     matcher = get_matcher(cnn, matcher_opts)
     matcher.mode = 'match'
@@ -100,16 +109,17 @@ def maximize(conf, cnn, neuron):
     # Optimisation
     maximize.iteration = 0
     def train_callback():
-        # Regularisation: add noise to the generator input
-        if conf.input_noise_std > 0:
-            n = torch.randn_like(net_input) * conf.input_noise_std
-        else:
-            n = torch.zeros_like(net_input)
         # Regularisation: add noise to the network parameters
         if conf.param_noise:
             for par in [x for x in net.parameters() if len(x.size()) == 4]:
                 par = par + torch.randn_like(par) * (par.std().detach()/50)
-        generated = net(net_input + n)[:, :, :imsize, :imsize] 
+        # Regularisation: add noise to the generator input
+        if conf.input_noise_std > 0:
+            n = torch.randn_like(net_input) * conf.input_noise_std
+            generated = net(net_input)[:, :, :imsize, :imsize]
+        else:
+            n = torch.zeros_like(net_input)
+            generated = net(net_input + n)[:, :, :imsize, :imsize]
         generated_preprocessed = vgg_preprocess_caffe(generated)
         cnn(generated_preprocessed)
         total_loss = sum(matcher.losses.values())
@@ -120,6 +130,7 @@ def maximize(conf, cnn, neuron):
             generated_np = [np.clip(torch_to_np(x), 0, 1) for x in torch.chunk(generated, 1)]
             plot_image_grid(generated_np, 8, 1, num=1)
             plt.pause(0.001)
+            plt.pause(0.001)
         maximize.iteration += 1
         return total_loss
 
@@ -127,9 +138,8 @@ def maximize(conf, cnn, neuron):
     matcher.method = 'match'
     p = get_params('net', net, net_input)
     optimize(conf.optimizer, p, train_callback, LR=conf.lr, num_iter=conf.num_iter, weight_decay=conf.weight_decay)
-    
+
     generated = net(net_input)[:, :, :imsize, :imsize]
     generated_np = np.clip(torch_to_np(generated), 0, 1)
     im = Image.fromarray((255 * generated_np).astype(np.uint8).transpose(1, 2, 0))
     return im
-   

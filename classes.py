@@ -4,9 +4,9 @@ import PIL
 import maximizer 
 from utils.feature_inversion_utils import View # For Pickle
 
-class_names = ["black swan", "cheesburger", "goose", "coffee mug", "vending machine", "tree frog"]
+class_names = ["black swan", "cheeseburger", "goose", "coffee mug", "vending machine", "tree frog"]
 
-maximizer.xmkdir('data/maxim')
+maximizer.xmkdir('data/maxim2')
 
 for class_name in reversed(class_names):
     maximizer.conf.layer_to_maximize = "fc8"
