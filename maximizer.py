@@ -84,16 +84,29 @@ def maximize(conf, cnn, neuron):
     # Generator network (prior)
     net_input = get_noise(conf.input_depth, conf.input_type, imsize_net, card = 1)
     net_input = net_input.type(conf.data_type).detach()
-    net = skip(conf.input_depth, 3,
-        num_channels_down = [16, 32, 64, 128, 128, 128],
-        num_channels_up   = [16, 32, 64, 128, 128, 128],
-        num_channels_skip = [ 4,  4,  4,   4,   4,   4],
-        filter_size_down  = [ 7,  7,  5,   5,   3,   3],
-        filter_size_up    = [ 7,  7,  5,   5,   3,   3],
-        upsample_mode = 'nearest',
-        downsample_mode = 'avg',
-        need_sigmoid = True,
-        pad = conf.pad,
+    if False:
+        net = skip(conf.input_depth, 3,
+            num_channels_down = [16, 32, 64, 128, 128, 128],
+            num_channels_up   = [16, 32, 64, 128, 128, 128],
+            num_channels_skip = [ 4,  4,  4,   4,   4,   4],
+            filter_size_down  = [ 7,  7,  5,   5,   3,   3],
+            filter_size_up    = [ 7,  7,  5,   5,   3,   3],
+            upsample_mode = 'nearest',
+            downsample_mode = 'avg',
+            need_sigmoid = True,
+            pad = conf.pad,
+            act_fun = 'LeakyReLU')
+    else:
+        net = skip(conf.input_depth, 3,
+            num_channels_down = [16, 32, 64, 128, 128, 128],
+            num_channels_up   = [16, 32, 64, 128, 128, 128],
+            num_channels_skip = [ 0,  4,  4,   4,   4,   4],   
+            filter_size_down  = [ 5,  3,  5,   5,   3,   5],
+            filter_size_up    = [ 5,  3,  5,   3,   5,   3], 
+            upsample_mode = 'bilinear',
+            downsample_mode = 'avg',
+            need_sigmoid = True,
+            pad = conf.pad,
         act_fun = 'LeakyReLU')
     net = net.type(conf.data_type)
 
