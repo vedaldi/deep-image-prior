@@ -21,7 +21,7 @@ conf.pretrained_net = 'alexnet_caffe'
 #conf.pretrained_net = 'alexnet_torch'
 conf.layer_to_maximize = 'fc8'
 conf.data_type = torch.FloatTensor
-conf.pad = 'zero'
+conf.pad = 'reflection'
 conf.optimizer = 'adam'
 conf.lr = 0.01
 conf.weight_decay = 0
@@ -122,13 +122,13 @@ def maximize(conf, cnn, neuron):
             generated = net(net_input)[:, :, :imsize, :imsize]
         generated_preprocessed = vgg_preprocess_caffe(generated)
         cnn(generated_preprocessed)
-        total_loss = sum(matcher.losses.values())
+        total_loss = sum(matcher.losses.values()) * 5
         total_loss.backward()
         print ('Iteration %05d    Loss %.3f' %
             (maximize.iteration, total_loss.item()), '\r', end='')
         if conf.plot and maximize.iteration % 200 == 0:
             generated_np = [np.clip(torch_to_np(x), 0, 1) for x in torch.chunk(generated, 1)]
-            plot_image_grid(generated_np, 8, 1, num=1)
+            plot_image_grid(generated_np, 1, 1, num=1)
             plt.pause(0.001)
             plt.pause(0.001)
         maximize.iteration += 1

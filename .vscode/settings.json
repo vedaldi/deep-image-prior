@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "/Users/vedaldi/miniconda3/envs/deep/bin/python",
+    "python.pythonPath": "/users/vedaldi/miniconda3/envs/deep/bin/python",
     "python.linting.pylintEnabled": true,
     "python.linting.pylintArgs": [
         "--extension-pkg-whitelist=numpy,torch",
