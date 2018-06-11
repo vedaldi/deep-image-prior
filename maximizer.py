@@ -29,7 +29,7 @@ conf.num_iter = 3200
 conf.input_type = 'noise'
 conf.input_depth = 32
 conf.plot = True
-conf.cuda = '1'
+conf.cuda = '3'
 conf.input_noise_std = 0.03
 conf.param_noise = True
 
@@ -144,6 +144,7 @@ def maximize(conf, cnn, neuron):
             plot_image_grid(generated_np, 1, 1, num=1)
             plt.pause(0.001)
             plt.pause(0.001)
+            dump_gc(str(maximize.iteration) + ".txt")
         maximize.iteration += 1
         return total_loss
 
@@ -156,3 +157,14 @@ def maximize(conf, cnn, neuron):
     generated_np = np.clip(torch_to_np(generated), 0, 1)
     im = Image.fromarray((255 * generated_np).astype(np.uint8).transpose(1, 2, 0))
     return im
+
+def dump_gc(file):
+    import torch
+    import gc
+    with  open(file, "w") as f:
+        for obj in gc.get_objects():
+            try:
+                if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
+                    print(type(obj), obj.size(), file=f)
+            except:
+                pass

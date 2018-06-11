@@ -12,6 +12,11 @@ class_names = [x for _, x in imnet_classes.items()]
 maximizer.xmkdir('data/maxim2')
 
 for class_name in reversed(class_names):
+    out_path = os.path.join('data/maxim', class_name + ".png")
+    print(out_path)
+    if os.path.exists(out_path):
+        print("Skipping", out_path)
+        continue
     maximizer.conf.layer_to_maximize = "fc8"
     neuron = maximizer.get_neuron_for_class(class_name)
 
@@ -21,4 +26,4 @@ for class_name in reversed(class_names):
 
     # Maximize
     x0 = maximizer.maximize(maximizer.conf, cnn, neuron)
-    x0.save(os.path.join('data/maxim', class_name + ".png"))
+    x0.save(out_path)

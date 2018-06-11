@@ -25,6 +25,14 @@ if len(sys.argv) > 1:
         inverter.conf.layer_to_invert = 'fc8'
         inverter.conf.cuda = '2'
 
+if len(sys.argv) > 2:
+    inverter.conf.cuda = sys.argv[2]
+
+if len(sys.argv) > 3:
+    in_order = bool(int(sys.argv[3]))
+
+print(in_order)
+
 # Create destination folder
 x1_folder = os.path.join(prefix, inverter.conf.layer_to_invert)
 x0_folder = os.path.join(prefix, 'x0')
@@ -48,7 +56,10 @@ def run(job):
 
 # Load and normalise image
 jobs = []
-for path in sorted(glob.glob(os.path.join(prefix, "*.jpg"))):
+paths = glob.glob(os.path.join(prefix, "*.jpg"))
+if in_order:
+    paths = list(sorted(paths))
+for path in paths:
     x0_path = os.path.join(x0_folder, os.path.basename(path))
     x1_path = os.path.join(x1_folder, os.path.basename(path))
     print(path, x0_path, x1_path)
