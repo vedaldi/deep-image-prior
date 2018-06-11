@@ -8,7 +8,7 @@ from utils.feature_inversion_utils import View # For Pickle
 prefix = 'data/blue'
 group_size = 1
 
-inverter.conf.plot = True
+inverter.conf.plot = False
 inverter.conf.cuda = None
 #inverter.conf.num_iter = 3
 
@@ -16,18 +16,18 @@ inverter.conf.cuda = None
 if len(sys.argv) > 1:
     case = int(sys.argv[1])
     if case == 1:
-        inverter.conf.layer_to_invert = 'fc6'
+        inverter.conf.layer_to_invert = 'conv5'
         inverter.conf.cuda = '0'
     elif case == 2:
-        inverter.conf.layer_to_invert = 'conv5'
-        inverter.conf.cuda = '2'
+        inverter.conf.layer_to_invert = 'fc6'
+        inverter.conf.cuda = '1'
     elif case == 3:
         inverter.conf.layer_to_invert = 'fc8'
-        inverter.conf.cuda = '3'
+        inverter.conf.cuda = '2'
 
 # Create destination folder
-x1_folder = os.path.join(prefix + '_test2', inverter.conf.layer_to_invert)
-x0_folder = os.path.join(prefix + '_test2', 'x0')
+x1_folder = os.path.join(prefix, inverter.conf.layer_to_invert)
+x0_folder = os.path.join(prefix, 'x0')
 inverter.xmkdir(x1_folder)
 inverter.xmkdir(x0_folder)
 
@@ -48,7 +48,7 @@ def run(job):
 
 # Load and normalise image
 jobs = []
-for path in glob.glob(os.path.join(prefix, "*.jpg")):
+for path in sorted(glob.glob(os.path.join(prefix, "*.jpg"))):
     x0_path = os.path.join(x0_folder, os.path.basename(path))
     x1_path = os.path.join(x1_folder, os.path.basename(path))
     print(path, x0_path, x1_path)

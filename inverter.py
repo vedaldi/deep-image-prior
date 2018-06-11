@@ -62,6 +62,7 @@ def invert(conf, cnn, ims):
         ims = [ims]
 
     # Load image to process
+    imsize_net = 256
     imsize = 227 if conf.pretrained_net == 'alexnet' else 224
     preprocess, deprocess = get_preprocessor(imsize), get_deprocessor()
     ims0 = []
