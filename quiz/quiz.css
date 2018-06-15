@@ -52,6 +52,10 @@ body {
 	transition: 0.3s ;
 }
 
+p { 
+	max-width: 920px ;
+}
+
 /* Question and score board */
 
 #header {
@@ -84,7 +88,6 @@ body {
 #score {
 	width: 12em ;
 	border: 1px solid gray ;
-	//background-color: #fd0 ;
 }
 
 #next {
