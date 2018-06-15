@@ -3,7 +3,7 @@
 /* Copyright (c) 2018 Andrea Vedaldi */
 
 let boardSize = [4,2] ;
-let maxClassNameLength = 30 ;
+let maxClassNameLength = 20 ;
 var classes = [] ;
 var answer = -1 ;
 var numDone = 0 ;
@@ -82,7 +82,7 @@ function makeQuiz(boardSize, updating) {
   let question = document.getElementById("question") ;
   question.textContent = `Find the “${norm(classNames[classes[answer]])}”` ;
   let next = document.getElementById("next") ;
-  next.textContent = "Give up" ;
+  next.textContent = "Give up!" ;
   next.href = "javascript:selectAnswer(-1)"
 }
 
