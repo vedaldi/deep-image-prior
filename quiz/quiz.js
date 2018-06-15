@@ -79,8 +79,11 @@ function makeQuiz(boardSize, updating) {
     let board = document.getElementById("board") ;
     board.innerHTML = quiz.join('') ;
   }
-  let question = document.getElementById("question")
+  let question = document.getElementById("question") ;
   question.textContent = `Find the “${norm(classNames[classes[answer]])}”` ;
+  let next = document.getElementById("next") ;
+  next.textContent = "Give up" ;
+  next.href = "javascript:selectAnswer(-1)"
 }
 
 function updateScore() {
@@ -96,13 +99,14 @@ function updateScore() {
 function selectAnswer(guess) {
   let classNames = getClassNames() ;
   let num = boardSize[0] * boardSize[1] ;
+  let href = `javascript:makeQuiz([${boardSize[0]}, ${boardSize[1]}],true)` ;
   numDone += 1 ;
   numCorrect += (guess == answer) ;
   for (var k = 0 ; k < num ; ++k) {
     let card = document.getElementById(`card${k}`) ;
     let title = card.querySelector(".title") ;
     let link = card.getElementsByTagName("a")[0] ;
-    link.href = `javascript:makeQuiz([${boardSize[0]}, ${boardSize[1]}],true)` ;
+    link.href = href ;
     title.textContent = norm(classNames[classes[k]]) ;
     if (guess == k && guess != answer) {
        card.classList.add("incorrect")
@@ -112,6 +116,9 @@ function selectAnswer(guess) {
     }
   }
   updateScore() ;
+  let next = document.getElementById("next") ;
+  next.textContent = "Next..." ;
+  next.href = href ;
 }
 
 function pickClasses(num) {

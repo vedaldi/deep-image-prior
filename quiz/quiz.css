@@ -11,19 +11,26 @@ body {
 	padding: 10px ;
 	height: 100% ;
 	min-height: 100% ;
-	font-size: 12px ;
+	font-size: 14px ;	
 	font-family: sans-serif ;
+	color: white ;
 	background-color: #18a ;
-
 }
+
 
 #content {
 	display: flex ;
+	flex-direction: column ;
 	width: 100% ;
 	height: 100% ;
 	min-height: 100% ;
+	text-align: center ;
 	align-items: center ;
   justify-content: center ;
+}
+
+#content a {
+	color: white ;
 }
 
 #quiz {
@@ -37,24 +44,29 @@ body {
 	margin: 0px ;
 	margin-bottom: 10px ;
 	padding: 5px ;
+	color: black ;
 	background-color: white ;
 	border: none ;
 	border-radius: 6px ;
 	box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2) ;
-	transition: 0.3s;
+	transition: 0.3s ;
 }
+
+/* Question and score board */
 
 #header {
 	width: 100% ;
 	height: 60px ;
 	vertical-align: middle ;
+	text-align: left ;
 }
 
 #header h1 {
 	font-size: 18px ;
+	margin-left: 5px ;
 }
 
-#score {
+.button {
 	box-sizing: border-box ;
 	display: inline-block ;
 	float: right ;
@@ -66,11 +78,23 @@ body {
 	margin: 5px ;
 	padding: 0 6px ;
 	border-radius: 6px ;
-	background-color: #fd0 ;
 	font-size: 15px ;
 }
 
-/* Board and cards */
+#score {
+	width: 12em ;
+	border: 1px solid gray ;
+	//background-color: #fd0 ;
+}
+
+#next {
+	width: 6em ;
+	color: black ! important ;
+	background-color: #fd0 ;
+	text-decoration: none ;
+}
+
+/* Game board and cards */
 
 #board {
 	display: flex ;

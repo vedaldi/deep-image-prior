@@ -6,5 +6,5 @@ all:
 	# echo "Nothing to do."
 
 post:
-	rsync -rav quiz.{html,css,js} $(url)/
+	rsync -rav index.html quiz.{css,js} $(url)/
 	rsync -ravl images/ $(url)/images/
