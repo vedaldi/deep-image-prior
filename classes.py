@@ -3,14 +3,21 @@ from PIL import Image
 import PIL
 import maximizer 
 from utils.feature_inversion_utils import View # For Pickle
+from imnet_list import imnet_classes
 
-class_names = ["black swan", "cheesburger", "goose", "coffee mug", "vending machine", "tree frog", "volcano"]
+prefix = 'data/maxim'
+class_names = [x for _, x in imnet_classes.items()]
 
-maximizer.xmkdir('data/maxim')
-maximizer.conf.cuda = None
-maximizer.conf.pretrained_net = 'alexnet_torch'
+maximizer.xmkdir(prefix)
+#maximizer.conf.cuda = None
+#maximizer.conf.pretrained_net = 'alexnet_torch'
 
 for class_name in reversed(class_names):
+    out_path = os.path.join(prefix, class_name + ".png")
+    print(out_path)
+    if os.path.exists(out_path):
+        print("Skipping", out_path)
+        continue
     maximizer.conf.layer_to_maximize = "fc8"
 
     neuron = maximizer.get_neuron_for_class(class_name)
@@ -21,4 +28,4 @@ for class_name in reversed(class_names):
 
     # Maximize
     x0 = maximizer.maximize(maximizer.conf, cnn, neuron)
-    x0.save(os.path.join('data/maxim', class_name + ".png"))
+    x0.save(out_path)
