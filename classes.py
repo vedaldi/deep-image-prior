@@ -4,12 +4,15 @@ import PIL
 import maximizer 
 from utils.feature_inversion_utils import View # For Pickle
 
-class_names = ["black swan", "cheesburger", "goose", "coffee mug", "vending machine", "tree frog"]
+class_names = ["black swan", "cheesburger", "goose", "coffee mug", "vending machine", "tree frog", "volcano"]
 
 maximizer.xmkdir('data/maxim')
+maximizer.conf.cuda = None
+maximizer.conf.pretrained_net = 'alexnet_torch'
 
 for class_name in reversed(class_names):
     maximizer.conf.layer_to_maximize = "fc8"
+
     neuron = maximizer.get_neuron_for_class(class_name)
 
     # Load network

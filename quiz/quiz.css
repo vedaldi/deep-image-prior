@@ -1,44 +1,112 @@
-body {
-	font-size: 20px;
-	font-family: sans-serif;
-	background-color: #38a;
+html {
+	margin: 0 ;
+	padding: 0 ;
+	width: 100% ;
+	height: 100% ;
+	min-height: 100% ;
 }
 
-div.option {
-	display: inline-block;
-	margin: 10px ;
-	width: 30% ;
-	border: thick solid gray ;
+body {
+	margin: 0 ;
+	padding: 10px ;
+	height: 100% ;
+	min-height: 100% ;
+	font-size: 12px ;
+	font-family: sans-serif ;
+	background-color: #18a ;
+
+}
+
+#content {
+	display: flex ;
+	width: 100% ;
+	height: 100% ;
+	min-height: 100% ;
+	align-items: center ;
+  justify-content: center ;
+}
+
+#quiz {
+	max-width: 920px ;
+	padding: 0 ;
+	margin: 0 ;
+}
+
+#header, div.card {
+	box-sizing: border-box;
+	margin: 0px ;
+	margin-bottom: 10px ;
+	padding: 5px ;
+	background-color: white ;
+	border: none ;
 	border-radius: 6px ;
-	box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+	box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2) ;
 	transition: 0.3s;
 }
 
-dov.option:hover {
+#header {
+	width: 100% ;
+	height: 60px ;
+	vertical-align: middle ;
+}
+
+#header h1 {
+	font-size: 18px ;
+}
+
+#score {
+	box-sizing: border-box ;
+	display: inline-block ;
+	float: right ;
+	height: 40px ;
+	line-height: 40px ;
+	width: 12em ;
+	vertical-align: middle ;
+	text-align: center ;
+	margin: 5px ;
+	padding: 0 6px ;
+	border-radius: 6px ;
+	background-color: #fd0 ;
+	font-size: 15px ;
+}
+
+/* Board and cards */
+
+#board {
+	display: flex ;
+	flex-direction: row ;
+	flex-wrap: wrap ;
+	justify-content: space-between ;
+	padding: 0px ;
+	margin: 0px ;
+}
+
+div.card {
+	display: inline-block ;
+	box-sizing: border-box ;
+	width: 24% ;
+}
+
+div.card:hover {
 	box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
 }
 
-div.option div.title {
+div.card img {
 	width: 100% ;
-	font-weight: bold ;
-	text-align: center ;
+	border-radius: 6px 6px 0 0;
+	padding: -5px ;
 }
 
-div.option img {
-	width: 100% ;
+div.correct {
+	background-color: greenyellow ;
 }
 
-#submit{
-	font-family: sans-serif;
-	font-size: 20px;
-	background-color: #279;
-	color: #fff;
-	border: 0px;
-	border-radius: 3px;
-	padding: 20px;
-	cursor: pointer;
-	margin-bottom: 20px;
+div.incorrect {
+	background-color: red ;
 }
-#submit:hover{
-	background-color: #38a;
+
+div.card h1 {
+	font-size: 1em ;
+	height: 1em ;
 }
+
