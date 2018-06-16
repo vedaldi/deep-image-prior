@@ -6,3 +6,4 @@ alexnet-torch_py3.pth
 data/
 models/alexnet-pytorch-state.pth
 quiz/images
+*/build/*
