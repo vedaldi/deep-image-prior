@@ -131,9 +131,12 @@ function loadNextBoard() {
     let a = card.getElementsByTagName("a")[0] ;
     let name = `Card ${k+1}` ;
     let href = `javascript:selectAnswer(${k})` ;
-    card.classList.remove("correct")
-    card.classList.remove("incorrect")
-    img.src = boards[board].imagePaths[k]  ;
+    card.classList.remove("correct") ;
+    card.classList.remove("incorrect") ;
+    img.src = "" ;
+    var dimg = new Image() ;
+    dimg.onload = function() { img.src = this.src ; } ;
+    dimg.src = boards[board].imagePaths[k]  ;
     hdr.textContent = name ;
     a.href = href ;
   }  // Preload next board
