@@ -4,16 +4,16 @@
 
 let boardSize = [4,2] ;
 let maxClassNameLength = 20 ;
-var classes = [] ;
-var answer = -1 ;
 var numDone = 0 ;
 var numCorrect = 0 ;
+var boards = [] ;
+var board = -1 ;
 
-function cap(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() ;
 }
 
-function norm(s) {
+function normalize(s) {
   var shorter = '' ;
   var names = s.split(',') ;
   while (names.length > 0) {
@@ -36,54 +36,7 @@ function norm(s) {
     names.shift() ;
     shorter = more ;
   }
-  return cap(shorter) ;
-}
-
-function makeQuiz(boardSize, updating) {
-  let quiz = [] ;
-  let num = boardSize[0] * boardSize[1] ;
-  updateScore() ;
-  classes = pickClasses(num) ;
-  answer = Math.floor(Math.random() * num) ;
-  let classNames = getClassNames() ;
-  let prefix = 'images' ;
-  var k = 0 ;
-  for (var i = 0 ; i < boardSize[1] ; ++i) {
-    for (var j = 0 ; j < boardSize[0] ; ++j) {
-      if (k >= num) { continue ; }
-      let path = prefix + '/' + classNames[classes[k]] + '.png' ;
-      let name = `Card ${k+1}` ;
-      let href = `javascript:selectAnswer(${k})` ;
-      if (!updating) {
-        quiz.push(`<div id="card${k}" class="card">`) ;
-        quiz.push(`<a href="${href}">`) ;
-        quiz.push(`<img src="${path}"></img>`) ;
-        quiz.push("</a>") ;
-        quiz.push(`<h1 class="title">${name}</h1>`) ;
-        quiz.push("</div>") ;
-      } else {
-        let card = document.getElementById(`card${k}`) ;
-        let img = card.getElementsByTagName("img")[0] ;
-        let hdr = card.getElementsByTagName("h1")[0] ;
-        let a = card.getElementsByTagName("a")[0] ;
-        card.classList.remove("correct")
-        card.classList.remove("incorrect")
-        img.src = path  ;
-        hdr.textContent = name ;
-        a.href = href ;
-      }
-      k = k + 1 ;
-    }
-  }
-  if (!updating) {
-    let board = document.getElementById("board") ;
-    board.innerHTML = quiz.join('') ;
-  }
-  let question = document.getElementById("question") ;
-  question.textContent = `Find the “${norm(classNames[classes[answer]])}”` ;
-  let next = document.getElementById("next") ;
-  next.textContent = "Give up!" ;
-  next.href = "javascript:selectAnswer(-1)"
+  return capitalize(shorter) ;
 }
 
 function updateScore() {
@@ -96,22 +49,23 @@ function updateScore() {
   }
 }
 
-function selectAnswer(guess) {
+function selectAnswer(cardNumber) {
+  let guess = boards[board].classes[cardNumber]
   let classNames = getClassNames() ;
   let num = boardSize[0] * boardSize[1] ;
-  let href = `javascript:makeQuiz([${boardSize[0]}, ${boardSize[1]}],true)` ;
+  let href = "javascript:loadNextBoard()" ;
   numDone += 1 ;
-  numCorrect += (guess == answer) ;
+  numCorrect += (guess == boards[board].answer) ;
   for (var k = 0 ; k < num ; ++k) {
     let card = document.getElementById(`card${k}`) ;
     let title = card.querySelector(".title") ;
     let link = card.getElementsByTagName("a")[0] ;
     link.href = href ;
-    title.textContent = norm(classNames[classes[k]]) ;
-    if (guess == k && guess != answer) {
+    title.textContent = boards[board].classNames[k]
+    if (cardNumber == k && guess != boards[board].answer) {
        card.classList.add("incorrect")
     }
-    if (answer == k) {
+    if (boards[board].answer == boards[board].classes[k]) {
       card.classList.add("correct")
     }
   }
@@ -134,7 +88,56 @@ function pickClasses(num) {
 }
 
 function run() {
-  makeQuiz(boardSize, false) ;
+  // Prepare boards
+  let num = boardSize[0]*boardSize[1] ;
+  let prefix = 'images' ;
+  let classNames = getClassNames() ;
+  for (var b = 0 ; b < 100 ; ++b) {
+    let classes = pickClasses(num) ;
+    let answer = classes[Math.floor(Math.random() * num)] ;
+    boards[b] = { 
+      classes: classes, 
+      answer: answer,
+      answerName: normalize(classNames[answer]),
+      classNames: classes.map(c => normalize(classNames[c])),
+      imagePaths: classes.map(c => prefix + '/' + classNames[c] + '.png')
+    }
+  }
+  // Prepare HTML for empty board
+  let quiz = [] ;
+  for (var k = 0 ; k < num ; ++k) {
+    quiz.push(`<div id="card${k}" class="card">`) ;
+    quiz.push("<a href='#'><img src=''></img></a>") ;
+    quiz.push("<h1 class='title'></h1>") ;
+    quiz.push("</div>") ;
+  }
+  document.getElementById("board").innerHTML = quiz.join('') ;
+  // Load first boards
+  loadNextBoard() ;
+}
+
+function loadNextBoard() {
+  board = board + 1 ;
+  let question = document.getElementById("question") ;
+  question.textContent = `Find the “${boards[board].answerName}”` ;
+  let next = document.getElementById("next") ;
+  next.textContent = "Give up!" ;
+  next.href = "javascript:selectAnswer(-1)"
+  updateScore() ;
+  for (var k = 0 ; k < boardSize[0]*boardSize[1] ; ++k) {
+    let card = document.getElementById(`card${k}`) ;
+    let img = card.getElementsByTagName("img")[0] ;
+    let hdr = card.getElementsByTagName("h1")[0] ;
+    let a = card.getElementsByTagName("a")[0] ;
+    let name = `Card ${k+1}` ;
+    let href = `javascript:selectAnswer(${k})` ;
+    card.classList.remove("correct")
+    card.classList.remove("incorrect")
+    img.src = boards[board].imagePaths[k]  ;
+    hdr.textContent = name ;
+    a.href = href ;
+  }  // Preload next board
+  boards[board+1].imagePaths.forEach(  path => (new Image().src = path)) ;
 }
 
 function getClassNames() {
